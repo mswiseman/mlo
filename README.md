@@ -5,4 +5,7 @@ Many of the scripts and code found in this folder were written by others; if you
 
 ### Data wrangling
 * [SeqIO Extract](scripts/seqIO_extract.py)
-* 
+
+
+### Tidying
+* [Cleaner](scripts/cleaner.sh)
