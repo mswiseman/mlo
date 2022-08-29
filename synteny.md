@@ -22,7 +22,12 @@ Enter agat env:
 
 ```conda activate agat```
 
+Either qrsh or SGE submit
+
+```qrsh```
+
 Pull out mapped sequences:
 
-```agat_sp_extract_sequences.pl --cdna -gff cascade.HiFi.minimap2_shin.gtf --fasta shinshuwase_assembly.fa -o shin-cas.fa```
+```agat_sp_extract_sequences.pl --cdna -gff myFolder/Hu_lup/other_cultivar_genomes/shin/cascade.HiFi.minimap2_shin.gtf --fasta myFolder/Hu_lup/other_cultivar_genomes/shin/Shinshuwase_assembly.fa -o shin-cas.fa```
 
+```agat_sp_extract_sequences.pl --cdna -gff myFolder/Hu_lup/other_cultivar_genomes/teammaker/cascade.HiFi.minimap2_teamaker.gtf --fasta myFolder/Hu_lup/other_cultivar_genomes/teammaker/Teammaker_assembly.fa -o team-cas.fa```
