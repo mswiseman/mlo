@@ -12,14 +12,14 @@ stringtie -p 4 -e -G combinedGeneModels.fullAssembly.repeatFiltered.gff -o $i.gt
 done
 ```
 
-####  agat  ####
+### Agat
  
-# run conda from bash
+Run conda from bash
 `bash`
 
-# enter agat env
+Enter agat env
 `conda activate agat`
 
-# pull out mapped sequences
-agat_sp_extract_sequences.pl --cdna -gff cascade.HiFi.minimap2_shin.gtf --fasta shinshuwase_assembly.fa -o shin-cas.fa
+Pull out mapped sequences
+`agat_sp_extract_sequences.pl --cdna -gff cascade.HiFi.minimap2_shin.gtf --fasta shinshuwase_assembly.fa -o shin-cas.fa`
 
