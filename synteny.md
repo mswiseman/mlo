@@ -1,4 +1,4 @@
-`sh
+```sh
 #!/bin/bash
 
 for i in `ls -1 *.bam| cut -c -17 |uniq`
@@ -10,7 +10,7 @@ samtools sort -@ 4 -o $i.sam.bam $i.sam
 echo " Running stringtie"
 stringtie -p 4 -e -G combinedGeneModels.fullAssembly.repeatFiltered.gff -o $i.gtf $i.sam.bam
 done
-`
+```
 
 ####  agat  ####
  
