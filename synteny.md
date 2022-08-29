@@ -15,11 +15,11 @@ done
 ### Agat
  
 Run conda from bash
-`bash`
+```bash```
 
 Enter agat env
-`conda activate agat`
+```conda activate agat```
 
 Pull out mapped sequences
-`agat_sp_extract_sequences.pl --cdna -gff cascade.HiFi.minimap2_shin.gtf --fasta shinshuwase_assembly.fa -o shin-cas.fa`
+```agat_sp_extract_sequences.pl --cdna -gff cascade.HiFi.minimap2_shin.gtf --fasta shinshuwase_assembly.fa -o shin-cas.fa```
 
