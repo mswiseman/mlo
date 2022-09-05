@@ -6,14 +6,16 @@ requires:
 - bedtools (version 2.29.2)
 - bedops (version 2.4.35)
 - R (version 4.0.0) with libraries:
--	 dplyr (version 1.0.0)
-	-- tidyr (version 1.1.0)
-	-- readr (version 1.3.1)
-	-- tibble (version 3.0.1)
+  - dplyr (version 1.0.0)
+  - tidyr (version 1.1.0)
+  - readr (version 1.3.1)
+  - tibble (version 3.0.1)
 
 
 ### download genomes and annotations ###
+
 ```sh
+
 if [ ! -f "cascadeDovetail.fasta" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > dovetailCascade10ScaffoldsUnmasked.fasta
 fi
@@ -24,12 +26,17 @@ fi
 ```
 
 ### extract coordinates of the chromosomal genes ###
+
 	```sh
+	
 	awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.repeatFiltered.gff \
 			| awk -v OFS='\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9}' \
-			> genes.gff111
+			> genes.gff
+			
+	```
 	
 	### generate bed file with promoter coordinates (+5 to -165) ###
+	
 	```sh
 	awk -v OFS='\t' '{
 		ID=substr($9, 4, index($9, ";") - 4);
@@ -41,6 +48,7 @@ fi
 	```
 	
 	### for longer analyses (+5 to -2000) ###
+	
 	```sh
 	awk -v OFS='\t' '{
 		ID=substr($9, 4, index($9, ";") - 4);
@@ -51,13 +59,17 @@ fi
 		```
 
 	### get fasta sequences ###
+	
 	```sh
 	echo' bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed> Humulus_protein_coding_promoters.fasta' > sge.promoter1
 	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed> Humulus_protein_coding_promoters2k.fasta > sge.promoter2
+	
 	```
 	
 	```sh
+	
 	SGE_Array -c sge.promoter1 -r SGE_promoterSeq -p 32 
+	
 	```
 
 	
