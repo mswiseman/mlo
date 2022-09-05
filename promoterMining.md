@@ -46,7 +46,7 @@ awk -v OFS='\t' '{
 
 Get fasta sequences
 ```shell
-	echo -e 'bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed > Humulus_protein_coding_promoters.fasta \n \
+	echo 'bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed > Humulus_protein_coding_promoters.fasta \
 	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed > Humulus_protein_coding_promoters2k.fasta' > sge.promoter	
 ```
 
