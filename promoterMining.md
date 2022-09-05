@@ -8,7 +8,7 @@ requires:
 
 Download genomes and annotations
 ```shell
-if [ ! -f "cascadeDovetail.fasta" ]; then
+if [ ! -f "dovetailCascade10ScaffoldsUnmasked.fasta" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > dovetailCascade10ScaffoldsUnmasked.fasta
 fi
 if [ ! -f "combinedGeneModels.fullAssembly.repeatFiltered.gff" ]; then
