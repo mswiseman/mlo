@@ -27,13 +27,13 @@ fi
 
 ### extract coordinates of the chromosomal genes ###
 
-	```sh
+```shell
 	
-	awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.repeatFiltered.gff \
-			| awk -v OFS='\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9}' \
-			> genes.gff
+awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.repeatFiltered.gff \
+		| awk -v OFS='\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9}' \
+		> genes.gff
 			
-	```
+```
 	
 	### generate bed file with promoter coordinates (+5 to -165) ###
 	
