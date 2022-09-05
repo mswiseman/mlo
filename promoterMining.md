@@ -7,18 +7,16 @@ requires:
 
 
 Download genomes and annotations
-
 ```shell
 if [ ! -f "cascadeDovetail.fasta" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > dovetailCascade10ScaffoldsUnmasked.fasta
 fi
-if [ ! -f "cascadeDovetail.gff3" ]; then
-  curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/geneData/transdecoder/transdecoderOutput/transcripts.fasta.transdecoder.genomeCentric.gff3.gz | gunzip | grep -v "^#" | sed 's/^Scaffold//g' > transcripts.fasta.transdecoder.genomeCentric.gff3.gff3
+if [ ! -f "combinedGeneModels.fullAssembly.repeatFiltered.gff" ]; then
+  curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/geneData/combinedGeneModels/combinedGeneModels.fullAssembly.gff.gz | gunzip | grep -v "^#" | sed 's/^Scaffold//g' > combinedGeneModels.fullAssembly.repeatFiltered.gff
 fi
 ```
 
 Extract coordinates of the chromosomal genes
-
 ```shell
 	
 awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.repeatFiltered.gff \
@@ -28,7 +26,6 @@ awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.
 ```
 	
 Generate bed file with promoter coordinates (+5 to -165)
-	
 ```shell
 awk -v OFS='\t' '{
 	ID=substr($9, 4, index($9, ";") - 4);
@@ -39,7 +36,6 @@ awk -v OFS='\t' '{
 ```
 	
 For longer analyses (+5 to -2000)
-	
 ```shell
 awk -v OFS='\t' '{
 	ID=substr($9, 4, index($9, ";") - 4);
@@ -49,7 +45,6 @@ awk -v OFS='\t' '{
 ```
 
 Get fasta sequences
-	
 ```shell
 	echo -e 'bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed > Humulus_protein_coding_promoters.fasta \n \
 	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed > Humulus_protein_coding_promoters2k.fasta' > sge.promoter	
