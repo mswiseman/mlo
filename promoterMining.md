@@ -24,17 +24,12 @@ for SPECIES in "Humulus"
 do
 
 	### extract coordinates of the chromosomal genes ###
-awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' Humulus_annotation.gff3 \
-			| grep "type=mRNA" \
+awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' transcripts.fasta.transdecoder.genomeCentric.gff3 \
+			| grep "type=miRNA" \
 			| awk -v OFS='\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9}' \
-			> Humulus_mRNA_genes.gff3
+			> Humulus_miRNA_genes.gff3
 	
 	### generate bed file with promoter coordinates (+5 to -165) ###
-	if [ ${SPECIES} = 'Maize' ]
-	then
-		Rscript correct_Maize_TSSs.R
-	fi
-	
 	awk -v OFS='\t' '{
 		ID=substr($9, 4, index($9, ";") - 4);
 		sub(/gene:/, "", ID);
@@ -47,7 +42,7 @@ awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' Humulus_annotation.gff3 \
 		sub(/gene:/, "", ID);
 		if($7 == "+") {print $1, ($4 - 166), ($4 + 4), ID, 0, $7}
 		else if($7 == "-") {print $1, ($5 - 5), ($5 + 165), ID, 0, $7}
-	}' ${SPECIES}_miRNA_genes.gff3 | awk '$2 >= 0' > ${SPECIES}_miRNA_promoters.bed
+	}' Humulus_miRNA_genes.gff3 | awk '$2 >= 0' > Humulus_miRNA_promoters.bed
 
 
 	### get fasta sequences ###
@@ -110,3 +105,57 @@ sed -i 's/K/T/g' Arabidopsis_all_promoters.tsv
 
 ### collapse identical sequences and create reference sequences ###
 Rscript unique_promoters.R
+
+#!/usr/bin/env Rscript
+
+library(readr)
+library(dplyr)
+
+for (species in c('Humulus', 'Cannabis')) {
+  noUTR <- read_lines(paste0(species, '_noUTR.txt'))
+
+  promoters <- read_tsv(paste0(species, '_all_promoters.tsv')) %>%
+    mutate(
+      UTR = (! gene %in% noUTR)
+    ) %>%
+    group_by(sequence, type, strand, mutations) %>%
+    summarise(
+      gene = paste0(gene, collapse = ';'),
+      UTR = all(UTR)
+    ) %>%
+    ungroup() %>%
+    group_by(sequence) %>%
+    summarise(
+      across(-UTR, ~if_else(n_distinct(.x) == 2, paste0(.x, collapse = '/'), first(.x))),
+      UTR = all(UTR)
+    ) %>%
+    ungroup() %>%
+    select(gene, type, sequence, strand, UTR, mutations) %>%
+    arrange(gene)
+  
+  write_tsv(promoters, paste0(species, '_all_promoters_unique.tsv'), na = '')
+
+  fasta <- promoters %>%
+    select(gene, sequence) %>%
+    bind_rows(c(gene = '35Spr', sequence = 'GCAAGACCCTTCCTCTATATAAGGAAGTTCATTTCATTTGGAGAGGACACG')) %>%
+    mutate(
+      gene = paste0('>', gene)
+    ) %>%
+    select(gene, sequence)
+
+  write_delim(fasta, paste0(species, '_all_promoters_unique.fa'), delim = '\n', col_names = FALSE)
+
+  assign(species, promoters)
+}
+
+all.promoters <- bind_rows(Humulus, Cannabis) %>%
+  select(gene, sequence) %>%
+  bind_rows(c(gene = '35Spr', sequence = 'GCAAGACCCTTCCTCTATATAAGGAAGTTCATTTCATTTGGAGAGGACACG')) %>%
+  mutate(
+    gene = paste0('>', gene)
+  ) %>%
+  select(gene, sequence)
+
+write_delim(all.promoters, 'all_promoters_unique.fa', delim = '\n', col_names = FALSE)
+Footer
+
