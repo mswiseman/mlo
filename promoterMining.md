@@ -14,15 +14,13 @@ requires:
 
 ### download genomes and annotations ###
 
-```sh
-
+```shell
 if [ ! -f "cascadeDovetail.fasta" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > dovetailCascade10ScaffoldsUnmasked.fasta
 fi
 if [ ! -f "cascadeDovetail.gff3" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/geneData/transdecoder/transdecoderOutput/transcripts.fasta.transdecoder.genomeCentric.gff3.gz | gunzip | grep -v "^#" | sed 's/^Scaffold//g' > transcripts.fasta.transdecoder.genomeCentric.gff3.gff3
 fi
-
 ```
 
 ### extract coordinates of the chromosomal genes ###
@@ -35,42 +33,37 @@ awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.
 			
 ```
 	
-	### generate bed file with promoter coordinates (+5 to -165) ###
+### generate bed file with promoter coordinates (+5 to -165) ###
 	
-	```sh
-	awk -v OFS='\t' '{
-		ID=substr($9, 4, index($9, ";") - 4);
-		sub(/gene:/, "", ID);
-		if($7 == "+") {print $1, ($4 - 166), ($4 + 4), ID, 0, $7}
-		else if($7 == "-") {print $1, ($5 - 5), ($5 + 165), ID, 0, $7}
-	}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters.bed
+```shell
+awk -v OFS='\t' '{
+	ID=substr($9, 4, index($9, ";") - 4);
+	sub(/gene:/, "", ID);
+	if($7 == "+") {print $1, ($4 - 166), ($4 + 4), ID, 0, $7}
+	else if($7 == "-") {print $1, ($5 - 5), ($5 + 165), ID, 0, $7}
+}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters.bed
+```
 	
-	```
+### for longer analyses (+5 to -2000) ###
 	
-	### for longer analyses (+5 to -2000) ###
-	
-	```sh
-	awk -v OFS='\t' '{
-		ID=substr($9, 4, index($9, ";") - 4);
-		sub(/gene:/, "", ID);if($7 == "+") {print $1, ($4 - 2000), ($4 + 4), ID, 0, $7}
-		else if($7 == "-") {print $1, ($5 - 5), ($5 + 2000), ID, 0, $7}
-		}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters2k.bed
-		
-		```
+```shell
+awk -v OFS='\t' '{
+	ID=substr($9, 4, index($9, ";") - 4);
+	sub(/gene:/, "", ID);if($7 == "+") {print $1, ($4 - 2000), ($4 + 4), ID, 0, $7}
+	else if($7 == "-") {print $1, ($5 - 5), ($5 + 2000), ID, 0, $7}
+	}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters2k.bed
+```
 
-	### get fasta sequences ###
+### get fasta sequences ###
 	
-	```sh
-	echo' bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed> Humulus_protein_coding_promoters.fasta' > sge.promoter1
-	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed> Humulus_protein_coding_promoters2k.fasta > sge.promoter2
+```shell
+	echo -e 'bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed > Humulus_protein_coding_promoters.fasta \n \
+	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed > Humulus_protein_coding_promoters2k.fasta' > sge.promoter	
+```
 	
-	```
-	
-	```sh
-	
-	SGE_Array -c sge.promoter1 -r SGE_promoterSeq -p 32 
-	
-	```
+```shell	
+SGE_Array -c sge.promoter -r SGE_promoterSeq -p 32 	
+```
 
 	
 ### To just look at MLO promoters, make a list of MLO geneIDs and run the following ###
