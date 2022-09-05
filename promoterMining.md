@@ -1,15 +1,9 @@
 Many of these scripts were started from [here](https://github.com/tobjores/Synthetic-Promoter-Designs-Enabled-by-a-Comprehensive-Analysis-of-Plant-Core-Promoters/blob/main/promoter_annotation/extract_promoter_seqs.sh).
 
-#!/bin/bash
-
 requires:
 - bedtools (version 2.29.2)
 - bedops (version 2.4.35)
-- R (version 4.0.0) with libraries:
-  - dplyr (version 1.0.0)
-  - tidyr (version 1.1.0)
-  - readr (version 1.3.1)
-  - tibble (version 3.0.1)
+- seqtk (version 1.3-r106)
 
 
 Download genomes and annotations
