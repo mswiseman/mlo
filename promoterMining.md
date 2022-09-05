@@ -1,3 +1,5 @@
+Many of these scripts were started from [here](https://github.com/tobjores/Synthetic-Promoter-Designs-Enabled-by-a-Comprehensive-Analysis-of-Plant-Core-Promoters/blob/main/promoter_annotation/extract_promoter_seqs.sh).
+
 #!/bin/bash
 
 # requires:
@@ -12,76 +14,46 @@
 
 ### download genomes and annotations ###
 if [ ! -f "cascadeDovetail.fasta" ]; then
-  curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > cascadeDovetail.fa
+  curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/assemblyData/dovetailCascade10ScaffoldsUnmasked.fasta.gz | gunzip > dovetailCascade10ScaffoldsUnmasked.fasta
 fi
 if [ ! -f "cascadeDovetail.gff3" ]; then
   curl http://hopbase.cqls.oregonstate.edu/content/cascadeDovetail/geneData/transdecoder/transdecoderOutput/transcripts.fasta.transdecoder.genomeCentric.gff3.gz | gunzip | grep -v "^#" | sed 's/^Scaffold//g' > transcripts.fasta.transdecoder.genomeCentric.gff3.gff3
 fi
 
 
-### get promoter sequences for Arabidopsis, maize, and sorghum ###
-for SPECIES in "Humulus"
-do
-
-	### extract coordinates of the chromosomal genes ###
-awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' transcripts.fasta.transdecoder.genomeCentric.gff3 \
-			| grep "type=miRNA" \
+### extract coordinates of the chromosomal genes ###
+	```sh
+	awk '{if($3 == "gene" && $1 ~ /[0-9]+/) print}' combinedGeneModels.fullAssembly.repeatFiltered.gff \
 			| awk -v OFS='\t' '{print $1, $2, $3, $4, $5, $6, $7, $8, $9}' \
-			> Humulus_miRNA_genes.gff3
+			> genes.gff111
 	
 	### generate bed file with promoter coordinates (+5 to -165) ###
+	```sh
 	awk -v OFS='\t' '{
 		ID=substr($9, 4, index($9, ";") - 4);
 		sub(/gene:/, "", ID);
 		if($7 == "+") {print $1, ($4 - 166), ($4 + 4), ID, 0, $7}
 		else if($7 == "-") {print $1, ($5 - 5), ($5 + 165), ID, 0, $7}
-	}' Humulus_protein_coding_genes.gff3 | awk '$2 >= 0' > ${SPECIES}_protein_coding_promoters.bed
-
+	}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters.bed```
+	
+	### for longer analyses (+5 to -2000) ###
+	```sh
 	awk -v OFS='\t' '{
 		ID=substr($9, 4, index($9, ";") - 4);
-		sub(/gene:/, "", ID);
-		if($7 == "+") {print $1, ($4 - 166), ($4 + 4), ID, 0, $7}
-		else if($7 == "-") {print $1, ($5 - 5), ($5 + 165), ID, 0, $7}
-	}' Humulus_miRNA_genes.gff3 | awk '$2 >= 0' > Humulus_miRNA_promoters.bed
-
+		sub(/gene:/, "", ID);if($7 == "+") {print $1, ($4 - 2000), ($4 + 4), ID, 0, $7}
+		else if($7 == "-") {print $1, ($5 - 5), ($5 + 2000), ID, 0, $7}
+		}' genes.gff | awk '$2 >= 0' > Humulus_protein_coding_promoters2k.bed```
 
 	### get fasta sequences ###
-	bedtools getfasta -s -nameOnly -fi cascadeDovetail.fa -bed Humulus_protein_coding_genes.gff3 > Humulus_protein_coding_promoters.fasta
+	```sh
+	echo' bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters.bed> Humulus_protein_coding_promoters.fasta' > sge.promoter1
+	bedtools getfasta -s -nameOnly -fi dovetailCascade10ScaffoldsUnmasked.fasta -bed  Humulus_protein_coding_promoters2k.bed> Humulus_protein_coding_promoters2k.fasta > sge.promoter2```
 	
-	bedtools getfasta -s -nameOnly -fi cascadeDovetail.fa -bed Humulus_mRNA_promoters.bed > Humulus_mRNA_promoters.fasta
+	```SGE_Array -c sge.promoter1 -r SGE_promoterSeq -p 32 ```
 
 	
-	### mutate BsaI (GGTCTC/GAGACC)/BbsI (GAAGAC/GTCTTC) sites and list mutations (T>A in BsaI fwd; A>T in BsaI rev; G>C in BbsI fwd; C>G in BbsI rev) ###
-	awk -v OFS='\t' 'BEGIN{print "gene", "type", "sequence", "strand", "mutations"} {
-	  GENE=substr($1, 2, index($1, "(") - 2); STRAND=substr($1, index($1, "(") + 1, 1);
-	  getline;
-	  if($1 !~ /N/) {
-		SEQ=$1; MUT="";
-		while(index(SEQ, "GGTCTC") > 0) {MUT=MUT index(SEQ, "GGTCTC") + 2 "T>A;"; sub(/GGTCTC/, "GGACTC", SEQ)};
-		while(index(SEQ, "GAGACC") > 0) {MUT=MUT index(SEQ, "GAGACC") + 3 "A>T;"; sub(/GAGACC/, "GAGTCC", SEQ)};
-		while(index(SEQ, "GAAGAC") > 0) {MUT=MUT index(SEQ, "GAAGAC") + 3 "G>C;"; sub(/GAAGAC/, "GAACAC", SEQ)};
-		while(index(SEQ, "GTCTTC") > 0) {MUT=MUT index(SEQ, "GTCTTC") + 2 "C>G;"; sub(/GTCTTC/, "GTGTTC", SEQ)};
-		sub(/;$/, "", MUT);
-		print GENE, "protein_coding", SEQ, STRAND, MUT
-	  }
-	}' ${SPECIES}_protein_coding_promoters.fasta > ${SPECIES}_all_promoters.tsv
-
-	awk -v OFS='\t' '{
-	  GENE=substr($1, 2, index($1, "(") - 2); STRAND=substr($1, index($1, "(") + 1, 1);
-	  getline;
-	  if($1 !~ /N/) {
-		SEQ=$1; MUT="";
-		while(index(SEQ, "GGTCTC") > 0) {MUT=MUT index(SEQ, "GGTCTC") + 2 "T>A;"; sub(/GGTCTC/, "GGACTC", SEQ)};
-		while(index(SEQ, "GAGACC") > 0) {MUT=MUT index(SEQ, "GAGACC") + 3 "A>T;"; sub(/GAGACC/, "GAGTCC", SEQ)};
-		while(index(SEQ, "GAAGAC") > 0) {MUT=MUT index(SEQ, "GAAGAC") + 3 "G>C;"; sub(/GAAGAC/, "GAACAC", SEQ)};
-		while(index(SEQ, "GTCTTC") > 0) {MUT=MUT index(SEQ, "GTCTTC") + 2 "C>G;"; sub(/GTCTTC/, "GTGTTC", SEQ)};
-		sub(/;$/, "", MUT);    
-		print GENE, "miRNA", SEQ, STRAND, MUT
-	  }
-	}' ${SPECIES}_miRNA_promoters.fasta >> ${SPECIES}_all_promoters.tsv
-
-
-
+### To just look at MLO promoters, make a list of MLO geneIDs and run the following ###
+seqtk subseq Humulus_protein_coding_promoters3.fasta dovetailMloList > mloPromoters.fasta
 
 ### identify protein-coding genes without an annotated 5' UTR (TSS = first base of CDS) ###
 awk -v FS='[\t;]' -v OFS='\t' '$3 == "CDS" {sub("ID=", "", $9); print $1, $4 - 1, $5, $9, $6, $7}' Humulus_annotation.gff3 \
