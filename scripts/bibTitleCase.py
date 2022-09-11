@@ -1,6 +1,6 @@
 # Original by Daniel L. Greenwald
 # http://dlgreenwald.weebly.com/blog/capitalizing-titles-in-bibtex
-# Modified by Garrett Dash Nelson
+# Modified by Garrett Dash Nelson and Michele Wiseman
 # Converts bibtex entries to title case
 
 # Additional notes:
