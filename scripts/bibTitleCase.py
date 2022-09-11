@@ -3,15 +3,20 @@
 # Modified by Garrett Dash Nelson
 # Converts bibtex entries to title case
 
+# Additional notes:
+# You may encounter an error with the new regex version. This code works with pip install regex==2022.3.2
+# Assuming files are defined in the correct path, run with: python bibTitleCase.py
+
+
 import re
 from titlecase import titlecase
 
 # Input and output files
-my_file = 'library.bibtex'
+my_file = 'library.bibtex'  # change as needed
 new_file = 'library-capitalized.bibtex' # in case you don't want to overwrite
 
 # Match title, Title, booktitle, Booktitle fields
-pattern = re.compile(r'(\W*)([Bb]ook)?([Tt]itle = {+)(.*)(}+,)')
+pattern = re.compile(r'(\W*)(title|journal)\s*=\s*{(.*)},')
 
 # Read in old file
 with open(my_file, 'r') as fid:
@@ -24,10 +29,10 @@ for line in lines:
     match_obj = pattern.match(line)
     if match_obj is not None:
         # Need to "escape" any special chars to avoid misinterpreting them in the regular expression.
-        oldtitle = re.escape(match_obj.group(4))
+        oldtitle = re.escape(match_obj.group(3))
 
         # Apply titlecase to get the correct title.
-        newtitle = titlecase(match_obj.group(4))
+        newtitle = titlecase(match_obj.group(3))
 
         # Replace and add to list
         p_title = re.compile(oldtitle)
