@@ -8,3 +8,6 @@ do
   grep -c '@' $i.fastq >> readcount.txt
 
 done
+
+# For average, run command below: 
+#awk '{ total += $1; count++} END { print total/count }' readcount.txt
