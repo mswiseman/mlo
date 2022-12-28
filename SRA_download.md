@@ -9,4 +9,4 @@ SRA Download using (SRA-Toolkit)[https://hpc.nih.gov/apps/sratoolkit.html].
 cat accs.txt | parallel -j 4 prefetch`
 
 # move to job submission server
-SGE_Batch -c "cat accs.txt | xargs -n 1 fasterq-dump -t /nfs5/BPP/Gent_Lab/home/wiseman/ncbi/tmp" -r sge.fasterq-dump -P 6
+`SGE_Batch -c "cat accs.txt | xargs -n 1 fasterq-dump -t /nfs5/BPP/Gent_Lab/home/wiseman/ncbi/tmp" -r sge.fasterq-dump -P 6`
